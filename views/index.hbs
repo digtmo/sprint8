@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+      integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="estilos.css" />
+  </head>
+  <body>
+    <div class="container">
+  <h1>Skate Park</h1>
+
+      <div class="py-4">
+        <h2>Lista de participantes</h2>
+
+        <hr />
+
+        <table class="table table-dark">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Foto</th>
+              <th scope="col">Nombre</th>
+              <th scope="col">Años de experiencia</th>
+              <th scope="col">Especialidad</th>
+              <th scope="col">Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tablaParticipantes">
+
+          </tbody>
+        </table>
+        <a href="/login">Iniciar Sesión</a> |
+        <a href="/registro">Registrarme</a>
+      </div>
+    </div>
+  </body>
+</html>
+
+<script>
+async function ListarParticipantes() {
+    const response = await fetch("http://localhost:3000/v1/registro/");
+    const data = await response.json();
+    console.log(data);
+    const tbody = document.getElementById("tablaParticipantes");
+
+    data.forEach((participante) => {
+        const row = document.createElement("tr");
+
+        const th = document.createElement("th");
+        th.setAttribute("scope", "row");
+        th.textContent = participante.id;
+
+        const tdFoto = document.createElement("td");
+        const img = document.createElement("img");
+        img.setAttribute("src", `http://localhost:3000/${participante.foto}`);
+        img.setAttribute("alt", "Foto de perfil"); // Agregar un atributo 'alt' recomendado
+        img.style.maxWidth = "auto";
+        img.style.maxHeight = "100px"
+        tdFoto.appendChild(img);
+
+        const tdNombre = document.createElement("td");
+        tdNombre.textContent = participante.nombre;
+
+        const tdExperiencia = document.createElement("td");
+        tdExperiencia.textContent = participante.anos_experiencia;
+
+        const tdEspecialidad = document.createElement("td");
+        tdEspecialidad.textContent = participante.especialidad;
+
+        const tdEstado = document.createElement("td");
+        if (participante.estado) {
+            tdEstado.textContent = "Aprobado";
+            tdEstado.style.color = "green";
+        } else {
+            tdEstado.textContent = "En revisión";
+            tdEstado.style.color = "yellow";
+        }
+
+        row.appendChild(th);
+        row.appendChild(tdFoto);
+        row.appendChild(tdNombre);
+        row.appendChild(tdExperiencia);
+        row.appendChild(tdEspecialidad);
+        row.appendChild(tdEstado);
+
+        tbody.appendChild(row);
+    });
+}
+
+ListarParticipantes()
+
+</script>
+
+
