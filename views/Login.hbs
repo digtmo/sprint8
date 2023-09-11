@@ -32,7 +32,7 @@
             <input class="form-control w-50 m-auto" id="password"/>
           </div>
         </div>
-        <button class="btn btn-success mb-3" onclick="login()">Ingresar</button>
+        <button type="button" class="btn btn-success mb-3" onclick="login()">Ingresar</button>
         <p>¿Aún no tienes cuenta? <a href="/Registro">Regístrate</a></p>
       </form>
     </div>
@@ -43,29 +43,42 @@
 
 
 <script>
-     async function login(){
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+async function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-        const formData = new FormData();
-        formData.append("email", email);
-        formData.append("password", password);
-         try {
-          const response = await fetch(`http://localhost:3000/v1/buscarregistro/`, {
-            method: "POST",
-            body: formData 
-          });
+  const formData = new FormData();
+  formData.append("email", email);
+  formData.append("password", password);
 
-          if (response.ok) {
-            console.log("Registro encontrado exitosamente",response.data);
-            // Puedes redirigir o mostrar un mensaje de éxito aquí
-          } else {
-            console.error("Error al encontrado el registro");
-            // Puedes mostrar un mensaje de error aquí
-          }
-        } catch (error) {
-          console.error("Error de red:", error);
-          // Puedes mostrar un mensaje de error de red aquí
-        }
-      }
+  try {
+    const response = await fetch(`http://localhost:3000/v1/buscarregistro/`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const token = data.token;
+      const id = data.resultado[0].id
+     if (data.resultado[0].rol === true) { // Redirige a la ruta /admin y envía el token como parámetro de consulta 
+     window.location.href = `/admin?token=${encodeURIComponent(token)}`; } 
+     else { // Redirige a la ruta /datos y envía el token como parámetro de consulta 
+     window.location.href = `/datos?token=${encodeURIComponent(token)}&id=${encodeURIComponent(id)}`; 
+     }
+
+
+      console.log("Data",id)
+    } else {
+      console.error("Error al encontrar el registro");
+      // Puedes mostrar un mensaje de error aquí
+    }
+  } catch (error) {
+    console.error("Error de red:", error);
+    // Puedes mostrar un mensaje de error de red aquí
+  }
+}
+
+
 </script>
+

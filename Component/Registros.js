@@ -20,9 +20,9 @@ async function obtenerRegistrosId(id) {
     }
 }
 
-async function crearRegistro (email, nombre, password, anos_experiencia, especialidad, foto, estado){
+async function crearRegistro (email, nombre, password, anos_experiencia, especialidad, foto, rol, estado){
     try {
-        const resultado = await pool.query("insert into skaters (email, nombre, password, anos_experiencia, especialidad, foto, estado) values ($1, $2, $3, $4, $5, $6, $7) RETURNING id, email, nombre, password, anos_experiencia, especialidad, foto, estado",[email, nombre, password, anos_experiencia, especialidad, foto, estado]); 
+        const resultado = await pool.query("insert into skaters (email, nombre, password, anos_experiencia, especialidad, foto, rol, estado) values ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, email, nombre, password, anos_experiencia, especialidad, foto, rol, estado",[email, nombre, password, anos_experiencia, especialidad, foto, rol, estado]); 
         pool.release;
         console.log("Registro Creado")
         return resultado.rows; 
@@ -67,10 +67,8 @@ async function eliminarRegistro(id){
 
 async function buscarRegistro(email, password){
     try {
-        const resultado = await pool.query("SELECT id, email, password from skaters WHERE email = $1 and password = $2",[email, password])
+        const resultado = await pool.query("SELECT rol, id from skaters WHERE email = $1 and password = $2",[email, password])
         pool.release;
-        console.log(resultado.rows)
-        
         return resultado.rows
     } catch (error) {
         console.log(error)

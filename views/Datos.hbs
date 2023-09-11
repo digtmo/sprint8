@@ -49,10 +49,10 @@
     </div>
   </div>
   <div class="mb-1">
-    <button class="btn btn-primary" onclick="editarRegistro(idActivo)">Actualizar</button>
+    <button type="button" class="btn btn-primary" onclick="editarRegistro(idParseada)">Actualizar</button>
   </div>
   <div>
-    <button class="btn btn-danger" onclick="eliminarRegistro(idActivo)">Eliminar cuenta</button>
+    <button type="button" class="btn btn-danger" onclick="eliminarRegistro(idParseada)">Eliminar cuenta</button>
   </div>
 </form>
 
@@ -63,7 +63,9 @@
 </html>
 
  <script>
-      let idActivo; // Variable global para almacenar el ID actual
+      let idActivo
+      let idParseada = parseInt(idActivo)
+      let id = {{id}}
 
       async function mostrarData(id) {
         const response = await fetch(`http://localhost:3000/v1/registro/${id}`);
@@ -72,7 +74,7 @@
         if (data.length > 0) {
           // Si hay al menos un objeto en el array
           const primerRegistro = data[0];
-          idActivo = primerRegistro.id; // Almacena el ID en la variable global
+          primerRegistro.id = idActivo
 
           // Asigna los valores del primer registro a los campos del formulario
           document.getElementById("email").value = primerRegistro.email;
@@ -83,10 +85,10 @@
           document.getElementById("especialidad").value = primerRegistro.especialidad;
         }
       }
+      
+     mostrarData(id)
 
-   mostrarData(30)
-
-      async function editarRegistro(id) {
+      async function editarRegistro(idActivo) {
         const nombre = document.getElementById("nombre").value;
         const password = document.getElementById("password").value;
         const anos_experiencia =  parseInt(document.getElementById("experiencia").value);
@@ -98,7 +100,7 @@
         formData.append("anos_experiencia", anos_experiencia);
         formData.append("especialidad", especialidad);
 
-        console.log(formData);
+        console.log("ID EDITAR REGISTRO",idActivo);
 
         try {
           const response = await fetch(`http://localhost:3000/v1/registro/${id}`, {
@@ -119,7 +121,7 @@
         }
       }
    
-      async function eliminarRegistro(id){
+      async function eliminarRegistro(idActivo){
          try {
           const response = await fetch(`http://localhost:3000/v1/registro/${id}`, {
             method: "DELETE",

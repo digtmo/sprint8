@@ -2,6 +2,8 @@ import express  from "express";
 import hbs from "hbs"
 import { crearRegistro, editarRegistro, eliminarRegistro,obtenerRegistros, obtenerRegistrosId, aprobar, buscarRegistro} from "./Component/Registros.js";
 import fileUpload from "express-fileupload";
+import jwt from "jsonwebtoken"
+
 //recuperar ruta raiz
 import { dirname } from "path";
 import { fileURLToPath } from "url";
@@ -12,6 +14,7 @@ hbs.registerPartials(__dirname + "/views/partials");
 
 const port = 3000
 const app = express()
+const secret = "hola"
 app.set("view engine","hbs");
 app.use(express.static("public"))
 app.use(express.json())
@@ -29,13 +32,41 @@ app.get("/registro", (req,res)=>{
     res.render("Registro")
 })
 
-app.get("/datos", (req,res)=>{
-    res.render("Datos")
-})
+app.get("/datos", (req, res) => {
+    const token = req.query.token; // Suponiendo que el token se envía en el cuerpo de la solicitud
+    try {
+        const decoded = jwt.verify(token, secret);
+        if (decoded && decoded.rol === false) { // Verificar si el token es válido y el valor de "rol" es true
+            // Enviar la constante "id" al renderizado de la página "/admin"
+            let id = decoded.id
+            res.render("Datos", { id });
+        } else {
+            console.log("Token inválido o no autorizado");
+            res.sendStatus(401); // Enviar un código de estado 401 (No autorizado)
+        }
+    } catch (error) {
+        console.log("Error al verificar el token:", error);
+        res.sendStatus(500); // Enviar un código de estado 500 (Error interno del servidor) en caso de error
+    }
+});
 
-app.get("/admin", (req,res)=>{
-    res.render("Admin")
-})
+
+app.get("/admin", (req, res) => {
+    const token = req.query.token; // Suponiendo que el token se envía en el cuerpo de la solicitud
+    try {
+        const decoded = jwt.verify(token, secret);
+        if (decoded && decoded.rol === true) { // Verificar si el token es válido y el valor de "rol" es true
+            res.render("Admin");
+        } else {
+            console.log("Token inválido o no autorizado");
+            res.sendStatus(401); // Enviar un código de estado 401 (No autorizado)
+        }
+    } catch (error) {
+        console.log("Error al verificar el token:", error);
+        res.sendStatus(500); // Enviar un código de estado 500 (Error interno del servidor) en caso de error
+    }
+});
+
 
 app.get("/v1/registro/", async (req, res) => {
     try {
@@ -75,8 +106,9 @@ app.post("/v1/registro/", async (req, res) => {
 
         // Mueve la imagen al directorio deseado
         await foto.mv(`./public${imagenURL}`);
-        let estado = false
-        res.status(201).send(await crearRegistro(email, nombre, password, anos_experiencia, especialidad, imagenURL, estado)) 
+        let rol = false
+        let estado = false  
+        res.status(201).send(await crearRegistro(email, nombre, password, anos_experiencia, especialidad, imagenURL, rol, estado)) 
     } catch (error) {
         console.log(error)
         res.sendStatus(400)
@@ -84,6 +116,7 @@ app.post("/v1/registro/", async (req, res) => {
   });
 
 app.put("/v1/registro/:id", async (req, res) => {
+    console.log(req.params.id)
     try {
         const {id} = req.params
         const {nombre, password, anos_experiencia, especialidad} = req.body
@@ -108,14 +141,23 @@ app.put("/v1/aprobar/:id", async (req, res) => {
 });
 
 app.post("/v1/buscarregistro/", async (req, res) => {
-    const {email,password} = req.body 
+    const { email, password } = req.body;
     try {
-        res.status(200).send(await buscarRegistro(email, password))
+        let resultado = await buscarRegistro(email, password);
+        if (resultado) {
+            const token = jwt.sign(resultado[0], secret);
+            res.status(200).json({ token, resultado }); // Envía el token y el resultado exitoso
+        } else {
+            console.log("Usuario No encontrado");
+            res.status(404).json({ message: "Usuario no encontrado" }); // Envia un mensaje de usuario no encontrado
+        }
     } catch (error) {
-        console.log(error)
-        res.sendStatus(400)
+        console.log(error);
+        res.sendStatus(400);
     }
 });
+
+
 
   app.delete("/v1/registro/:id", async (req, res) => {
     try {
